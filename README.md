@@ -101,17 +101,24 @@ This Environment variable will be used by terrabash to know where is your *Terra
 ## Pre Commit
 ```
 bash run-pre-commit.sh init
+bash run-pre-commit.sh init --simple-view
 bash run-pre-commit.sh plan
+bash run-pre-commit.sh plan --simple-view
 bash run-pre-commit.sh apply
+bash run-pre-commit.sh apply --simple-view
 ```
+
 This command used to execute terraform before terraform code committed
 
 
 ## Post Commit
 ```
 bash run-pre-commit.sh init
+bash run-pre-commit.sh init --simple-view
 bash run-pre-commit.sh plan
+bash run-pre-commit.sh plan --simple-view
 bash run-pre-commit.sh apply
+bash run-pre-commit.sh apply --simple-view
 ```
 This command used to execute terraform after terraform code committed
 
