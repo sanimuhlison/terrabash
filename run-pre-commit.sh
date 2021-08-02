@@ -81,6 +81,23 @@ execute() {
     pre-commit run --files *.tf
 }
 
+simple_view() {
+    cd $TF_DIR/$x
+    if [ "$STAGE" == "init" ]; then
+        rm -rf .terraform
+    fi
+    pwd
+
+    COMMAND=$(terraform $STAGE | grep "No\ changes\|Terraform\ has\ been\ successfully\ initialized")
+    if [[ $COMMAND == *"No changes"* ]] || [[ $COMMAND == *"successfully"* ]]; then
+        echo "${GREEN} $COMMAND ${RESET}"
+    else
+        echo ${RED} "SOMETHING WENT WRONG" ${RESET}
+    fi
+    
+    pre-commit run --files *.tf
+}
+
 input() {
     box
     read -p "Choose array number to be $STAGE_UPPER: " number
@@ -91,7 +108,7 @@ input() {
                 x=$(echo ${FILEPATH[$i]} | sed 's/\(.*\/\).*/\1/')
                 box GO TO ">>" [$i]-$x
                 check_state
-                execute
+                $1
             fi
         done
     elif [[ "$number" =~ [0-9]{1,3}[-][0-9]{1,3} ]]; then
@@ -102,7 +119,7 @@ input() {
                 x=$(echo ${FILEPATH[$i]} | sed 's/\(.*\/\).*/\1/')
                 box GO TO ">>" [$i]-$x
                 check_state
-                execute
+                $1
             fi
         done
     elif [[ "$number" =~ [0-9]{1,3} ]]; then
@@ -111,21 +128,29 @@ input() {
             x=$(echo ${FILEPATH[$number]} | sed 's/\(.*\/\).*/\1/' | sort -u)
             box GO TO ">>" [$number]-$x
             check_state
-            execute
+            $1
         fi
     else
         echo "${RED}Wrong Input${RESET}"
     fi
 }
 
-
-if [[ $1 == "init" ]] || [[ $1 == "plan" ]] || [[ $1 == "apply" ]]; then
+if [[ $1 == "init" ]] || [[ $1 == "plan" ]] && [[ $2 == "--simple-view" ]]; then
     box LIST OF DIRECTORY [ TERRAFORM $STAGE_UPPER ]:
     list
-    input
+    input simple_view
+elif [[ $1 == "init" ]] || [[ $1 == "plan" ]] || [[ $1 == "apply" ]]; then
+    box LIST OF DIRECTORY [ TERRAFORM $STAGE_UPPER ]:
+    list
+    input execute
+elif [[ $1 == "list" ]]; then
+    box LIST OF DIRECTORY
+    list
 else
     box Bad Argument
     echo "Please input ${YELLOW}init${RESET} OR ${YELLOW}plan${RESET} OR ${YELLOW}apply${RESET} after run-pre-commit.sh"
-    echo "eg: ${YELLOW}bash run-pre-commit.sh init${RESET}"
+    echo "Please input ${YELLOW}--simple-view${RESET} after init/plan/apply to view in simple mode"
+    echo "eg: ${YELLOW}bash run-post-commit.sh init${RESET}"
+    echo "eg: ${YELLOW}bash run-post-commit.sh init --simple-view${RESET}"
     exit 1   
 fi
